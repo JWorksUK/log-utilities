@@ -1,0 +1,21 @@
+{
+    "name": "philipbrown/log-utilities",
+    "description": "",
+    "license": "MIT",
+    "keywords": ["jworksuk"],
+    "authors": [
+        {
+            "name": "Jesse James",
+            "email": "me@jworksuk.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "4.0.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "JWorksUK\\LogUtilities\\": "src"
+        }
+    }
+}
