@@ -3,35 +3,38 @@
 namespace JWorksUK\LogUtilities;
  
 class LogUtilities {
-    protected $logs;
+    public $logs = [];
 
-    protected $findme = '/findme';
+    protected $findme = '/password-reset-request';
 
     protected $datetime;
 
+    public $directory;
+
     public $ignore = ['.','..','.DS_Store', 'logreader.php', 'exports'];
 
-    public $newlines = [];
+    public $lines = [];
 
     public $newArray = [];
 
 
-    public function __construct() {
-        $this->findLogs();
+    public function __construct($directory = '.') {
+        $this->directory = $directory;
         $this->datetime = date('Y-m-d-His');
-        $this->createExportFolder();
     }
 
     public function init() {
+        $this->findLogs();
         foreach ($this->logs as $log) {
             $this->processLog($log);
         }
         $this->orderNewLines();
+        $this->createExportFolder();
         $this->createNewLog();
     }
 
     public function findLogs() {
-        $logs = scandir('.');
+        $logs = scandir($this->directory);
 
         foreach ($logs as $log) {
             if (in_array($log, $this->ignore)) {
@@ -43,8 +46,6 @@ class LogUtilities {
     }
     
     public function processLog($log) {
-        echo $log."\n";
-
         $handle = fopen($log, "r");
         if ($handle) {
             while (($line = fgets($handle)) !== false) {
@@ -60,7 +61,7 @@ class LogUtilities {
         $pos = strpos($line, $this->findme);
         if ($pos === false) {
         } else {
-            $this->newlines[] = $line;
+            $this->lines[] = $line;
         }
     }
 
@@ -84,7 +85,7 @@ class LogUtilities {
     public function orderNewLines() {
         $expr = '/\d{2}\/(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\/\d{4}:\d{2}:\d{2}:\d{2} (?:-|\+)\d{4}/';
 
-        foreach ($this->newlines as $line) {
+        foreach ($this->lines as $line) {
             preg_match($expr ,$line, $matches);
 
             if (isset($matches[0])) {
@@ -93,12 +94,31 @@ class LogUtilities {
                     strtotime($matches[0]) < strtotime('2016-02-01 23:59:59')
 
                 ) {
-                    // echo date('Y-m-d H:i:s', strtotime($matches[0]))."\n";
                     $this->newArray[date('U', strtotime($matches[0]))] = $line;
                 }
             }
         }
 
         ksort($this->newArray);
+    }
+
+    // TESTER
+
+    public function scanDir($dir) {
+        $logs = scandir($dir);
+
+        foreach ($logs as $log) {
+            if (in_array($log, $this->ignore)) {
+                continue;
+            }
+
+            $this->logs[] = $dir.'/'.$log;
+        }
+    }
+
+    public function processLogs() {
+        foreach ($this->logs as $log) {
+            $this->processLog($log);
+        }
     }
 }
